@@ -73,6 +73,9 @@ pub struct MorseAudioGenerator {
     unit_freq_length: u32,
 }
 
+// Functions that implements the ability to create
+// morse code audio from a text string
+// reference: https://www.kent-engineers.com/codespeed.htm
 impl MorseAudioGenerator {
     pub fn new(text: &str, filename: &str, wpm: u32) -> Self {
         let spec = RefCell::new(hound::WavSpec {
@@ -115,6 +118,7 @@ impl MorseAudioGenerator {
         }
     }
 
+    // Adds a dit to the audio file (1 unit).
     fn add_dit(&self) {
         let mut writer = self.writer.borrow_mut();
         for t in (0..self.unit_freq_length).map(|x| x as f32 / 44100.0) {
@@ -123,6 +127,7 @@ impl MorseAudioGenerator {
         }
     }
 
+    // Adds a dah to the audio file (3 units).
     fn add_dah(&self) {
         let mut writer = self.writer.borrow_mut();
         for t in (0..self.unit_freq_length * 3).map(|x| x as f32 / 44100.0) {
@@ -131,6 +136,7 @@ impl MorseAudioGenerator {
         }
     }
 
+    // Adds a space between letters (3 unit).
     fn add_inter_char_space(&self) {
         let mut writer = self.writer.borrow_mut();
         for _ in 0..self.unit_freq_length * 3 {
@@ -138,6 +144,7 @@ impl MorseAudioGenerator {
         }
     }
 
+    // Adds a space between dits and dahs (1 unit).
     fn add_intra_char_space(&self) {
         let mut writer = self.writer.borrow_mut();
         for _ in 0..self.unit_freq_length {
@@ -145,6 +152,9 @@ impl MorseAudioGenerator {
         }
     }
 
+    // Adds a space between between words (4 units).
+    // This adds four units of duration, which makes
+    // for seven units of space combined.
     fn add_word_space(&self) {
         let mut writer = self.writer.borrow_mut();
         for _ in 0..self.unit_freq_length * 4 {
@@ -153,6 +163,9 @@ impl MorseAudioGenerator {
     }
 }
 
+// Converts the input text into morse code.
+// panics if the input character is not
+// found in the morse code map.
 fn text_to_morse(text: &str) -> String {
     text.chars()
         .map(|c| {
@@ -169,6 +182,8 @@ fn text_to_morse(text: &str) -> String {
         .replace(" / ", "/")
 }
 
+// Converts the wpm to unit length
+// all the word 'PARIS' contains 50 elemnts/units.
 fn wpm_to_unit_length(wpm: u32) -> f32 {
     60.0 / (wpm * 50) as f32
 }
